@@ -1,0 +1,62 @@
+# Assignment guidelines
+assignment/
+
+# Python environment & cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# IDE settings
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# OS generated files
+.DS_Store
+.DS_Store?
+ehthumbs.db
+Icon?
+Thumbs.db
+
+# Environmental variables (secrets)
+.env
+.env.*
+
+# MLflow files & databases
+mlruns/
+mlflow.db
+mlflow.db.db
+
+# Large / local data files
+data/bank-additional-full.csv
+data/bank.csv
+data/complaints_sample.csv
+data/*.csv
+data/*.zip
+data/*.pkl
+data/*.parquet
+
+# Local Vector DB artifacts
+*.index
+*.db
+vector_store/
+chroma/
+faiss_index/
+
+# Monitoring & HTML reports
+monitoring/*.html
+monitoring/evidently_report/

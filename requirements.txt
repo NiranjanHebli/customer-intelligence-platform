@@ -1,0 +1,28 @@
+# Web Framework & Serving API
+fastapi>=0.95.0
+uvicorn>=0.22.0
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+requests>=2.30.0
+
+# Data Manipulation & Validation
+pandas>=2.0.0
+numpy>=1.24.0
+pandera>=0.16.0
+
+# Machine Learning & Tracking
+scikit-learn>=1.2.0
+xgboost>=1.7.0
+mlflow>=2.3.0
+
+# LLM & Retrieval-Augmented Generation
+faiss-cpu>=1.7.4
+sentence-transformers>=2.2.2
+openai>=1.0.0
+
+# Monitoring & Drift
+evidently>=0.4.0
+
+# Testing
+pytest>=7.3.0
+flake8>=6.0.0
