@@ -12,6 +12,7 @@ venv/
 .venv/
 pip-log.txt
 pip-delete-this-directory.txt
+.pytest_cache/
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints
@@ -42,13 +43,8 @@ mlflow.db
 mlflow.db.db
 
 # Large / local data files
-data/bank-additional-full.csv
-data/bank.csv
-data/complaints_sample.csv
-data/*.csv
-data/*.zip
-data/*.pkl
-data/*.parquet
+data/*
+!data/sample_*.csv
 
 # Local Vector DB artifacts
 *.index
