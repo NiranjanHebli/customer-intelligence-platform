@@ -3,9 +3,8 @@ import pandas as pd
 import pandera.errors as pe
 from src.data_pipeline.validate import bank_marketing_schema, cfpb_complaints_schema
 
-# ----------------------------------------------------
+
 # Tests for Bank Marketing Schema
-# ----------------------------------------------------
 
 @pytest.fixture
 def valid_bank_row():
@@ -57,9 +56,7 @@ def test_bank_marketing_invalid_target(valid_bank_row):
     with pytest.raises(pe.SchemaError):
         bank_marketing_schema.validate(df)
 
-# ----------------------------------------------------
 # Tests for CFPB Complaints Schema
-# ----------------------------------------------------
 
 @pytest.fixture
 def valid_cfpb_row():
