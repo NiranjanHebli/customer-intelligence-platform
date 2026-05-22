@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 PROMOTION_DECISION_PATH = "docs/promotion_decision.json"
-MODEL_PATH = "src/serving/promoted_model.joblib"
+MODEL_PATH = "models/promoted_model.joblib"
 
 def load_model():
     """

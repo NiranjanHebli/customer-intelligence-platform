@@ -43,3 +43,13 @@ class BatchPredictResponse(BaseModel):
     total_scored: int
     conversion_counts: Dict[int, int]
     model_version: str
+
+class AskComplaintRequest(BaseModel):
+    question: str = Field(..., min_length=5)
+    filter_product: Optional[str] = None
+
+class AskComplaintResponse(BaseModel):
+    answer: str
+    cited_evidence_ids: List[str]
+    evidence_sufficiency_note: str
+    prompt_version: str

@@ -14,7 +14,7 @@ from src.training.evaluate import evaluate_pipeline, run_promotion_gate
 
 # Configurations
 DATA_PATH = "data/processed/bank_marketing_validated.csv"
-MODEL_OUTPUT_DIR = "src/serving"
+MODEL_OUTPUT_DIR = "models"
 PROMOTION_DECISION_PATH = "docs/promotion_decision.json"
 EXPERIMENT_NAME = "Meridian_Bank_Marketing"
 

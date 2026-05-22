@@ -1,5 +1,11 @@
 # Meridian Financial Customer Intelligence Platform
 
+[![Python Version](https://img.shields.io/badge/Python-3.13-lightgrey?labelColor=blue)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.95%2B-lightgrey?style=flat&logo=fastapi&logoColor=white&labelColor=009688)](https://fastapi.tiangolo.com/)
+[![LLM](https://img.shields.io/badge/LLM-Groq%20Llama%203.1-lightgrey?labelColor=orange)](https://groq.com/)
+[![ML](https://img.shields.io/badge/ML-XGBoost-lightgrey?labelColor=blue)](https://xgboost.readthedocs.io/)
+[![License](https://img.shields.io/badge/License-MIT-lightgrey?labelColor=green)](https://opensource.org/licenses/MIT)
+
 ## Problem Statement
 
 Meridian Financial needs a production-minded Customer Intelligence Platform to run smarter outreach campaigns and resolve customer complaints at scale. The system requires deploying one classical Machine Learning (ML) service and one Large Language Model (LLM) / Retrieval-Augmented Generation (RAG) service, both integrated behind a single production API spine.
@@ -13,7 +19,7 @@ The platform is divided into two primary lanes:
 
 ## Datasets & Data Pipeline
 
-For detailed documentation on the datasets, schemas, and download sources used in this platform, see [Dataset Reference](/docs/dataset_reference.md).
+For detailed documentation on the datasets, schemas, and download sources used in this platform, see [Dataset Reference](docs/dataset_reference.md).
 
 
 ## Architecture Diagram 
@@ -55,7 +61,6 @@ graph TD
     style S2 fill:none,stroke:none;
     style S3 fill:none,stroke:none;
 ```
-
 ---
 
 ## ML API & Serving
@@ -87,7 +92,7 @@ Returns the status of the server and the version of the currently loaded model a
   {
     "status": "ok",
     "ml_model_version": "xgboost_v1",
-    "vector_index_version": "not_implemented_yet"
+    "vector_index_version": "faiss_v1"
   }
   ```
 
@@ -175,30 +180,95 @@ Scores a batch of customers at once, returning aggregate conversion band counts.
 
 When starting the server, `src/serving/model_loader.py` checks `docs/promotion_decision.json` to decide which model version to load:
 
-- If the promotion gate passes (`is_promoted: true`), it loads `xgboost_v1`.
-- If it fails or is absent, it logs a warning and falls back to `baseline_or_fallback_v1`.
+- If the promotion gate passes (`is_promoted: true`), it loads the promoted model located in `models/promoted_model.joblib`.
+- If it fails or is absent, it logs a warning and falls back to loading a baseline model from the same directory or throws an error.
 
-### Running Tests
+---
 
-You can run the entire test suite (including data validation, feature engineering, and serving tests) using:
+## LLM/RAG Service
+
+The LLM/RAG service is built to answer inquiries about customer complaints using context retrieved from a FAISS vector index of CFPB complaints, powered by Groq's `llama-3.1-8b-instant` LLM.
+
+### API Key Configuration
+
+To use the RAG endpoint, set your Groq API key in your environment:
+
+```bash
+export GROQ_API_KEY="your-groq-api-key"
+```
+
+A default key is fallback-configured for ease of testing, but configuring your own key via the environment variable is recommended.
+
+### Building & Initializing the RAG Index
+
+If you need to build or rebuild the index from raw complaints data, run the indexing script:
+
+```bash
+python src/rag/index.py
+```
+
+This script:
+1. Loads raw complaints from `data/raw/cfpb_complaints.csv`.
+2. Generates sentence chunks of length 500 characters (with 50 overlap).
+3. Encodes chunks using `all-MiniLM-L6-v2` embeddings.
+4. Generates and stores the FAISS index (`src/rag/index.faiss`) and the mapping metadata (`src/rag/metadata.json`).
+
+### RAG API Endpoint
+
+#### 4. `POST /ask-complaints`
+Accepts a user question and an optional product filter, queries the local FAISS index, retrieves the most relevant chunks, and passes them as cited evidence to the Llama-3.1 model.
+* **Request Example**:
+  ```json
+  {
+    "question": "Why did I get charged an overdraft fee when I had money?",
+    "filter_product": "Bank account or service"
+  }
+  ```
+* **Response Example**:
+  ```json
+  {
+    "answer": "Based on the provided evidence, you were charged an overdraft fee because of a processing delay in a deposit [ID: 123456_0].",
+    "cited_evidence_ids": [
+      "123456_0",
+      "123456_1"
+    ],
+    "evidence_sufficiency_note": "Note: The provided evidence was sufficient to address the question.",
+    "prompt_version": "v1.0"
+  }
+  ```
+
+---
+
+## Running Tests
+
+You can run the entire test suite using:
 
 ```bash
 pytest -v
 ```
 
-Or you can run specific sets of tests:
+### macOS Threading Conflict Note
+> [!WARNING]
+> When running `pytest -v` sequentially, you might encounter a **Segmentation Fault** due to an OS-level conflict between macOS, Python 3.13, anyio (used by FastAPI's `TestClient`), and XGBoost's OpenMP compilation. This is an environment/runner issue; the application code runs correctly.
+>
+> To run tests safely without triggering the conflict, run the individual test suites separately:
 
-- **Data Validation Tests** (validates Pandera schemas on raw dataset formats):
+- **RAG & Retrieval Tests** (validates embedding search, LLM responses, and citations):
   ```bash
-  pytest tests/test_validation.py -v
+  pytest tests/test_retrieval.py -v
   ```
 
-- **Feature Engineering Tests** (validates derived feature logic and preprocessing):
+- **Feature Engineering Tests**:
   ```bash
   pytest tests/test_features.py -v
   ```
 
-- **API Schema & Serving Tests** (validates request/response parsing and endpoint operations):
+- **Data Validation Tests**:
   ```bash
-  pytest tests/test_schema.py tests/test_payload.py -v
+  pytest tests/test_validation.py -v
+  ```
+
+- **API Schema Tests**:
+  ```bash
+  pytest tests/test_schema.py -v
   ```

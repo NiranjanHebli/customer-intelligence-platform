@@ -1,35 +1,46 @@
+import os
+import sys
+
+# Crucial: This must be set BEFORE any libraries like faiss, xgboost, or torch are imported
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
+os.environ['OMP_NUM_THREADS'] = '1'
+
+from dotenv import load_dotenv
+
 from fastapi import FastAPI, HTTPException
 from typing import Dict, Any
 import pandas as pd
 import uvicorn
+
 from contextlib import asynccontextmanager
+from src.rag.retrieval import get_retriever
+from src.rag.generator import generate_answer
 
 from src.serving.schemas import (
     CustomerFeatures,
     PredictResponse,
     BatchPredictRequest,
-    BatchPredictResponse
+    BatchPredictResponse,
+    AskComplaintRequest,
+    AskComplaintResponse
 )
+from src.data_pipeline.features import add_derived_features
 from src.serving.model_loader import load_model
 
+load_dotenv()
+
 # Global references
-ml_pipeline = None
-model_ver = "unknown"
+try:
+    ml_pipeline, model_ver = load_model()
+except RuntimeError as e:
+    ml_pipeline = None
+    model_ver = f"failed_to_load: {str(e)}"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Load the ML model on startup
-    global ml_pipeline, model_ver
-    try:
-        ml_pipeline, model_ver = load_model()
-    except RuntimeError as e:
-        # We can either fail to start, or start and let endpoints fail.
-        # Starting with endpoints failing is often better for liveness probes.
-        ml_pipeline = None
-        model_ver = f"failed_to_load: {str(e)}"
+    # Model is already loaded globally to avoid macOS asyncio thread deadlocks
     yield
-    # Clean up on shutdown
-    ml_pipeline = None
+    # We do NOT set ml_pipeline = None on shutdown to prevent segfaults during sequential Pytest runs.
 
 
 app = FastAPI(
@@ -44,10 +55,8 @@ def health_check() -> Dict[str, Any]:
     return {
         "status": "ok",
         "ml_model_version": model_ver,
-        "vector_index_version": "not_implemented_yet" # Will be updated in Step 4
+        "vector_index_version": "faiss_v1"
     }
-
-from src.data_pipeline.features import add_derived_features
 
 @app.post("/predict", response_model=PredictResponse)
 def predict(features: CustomerFeatures):
@@ -95,6 +104,32 @@ def batch_score(request: BatchPredictRequest):
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/ask-complaints", response_model=AskComplaintResponse)
+def ask_complaints(request: AskComplaintRequest):
+    try:
+        retriever = get_retriever()
+        chunks, is_weak = retriever.retrieve(
+            query=request.question,
+            top_k=3,
+            filter_product=request.filter_product
+        )
+        
+        answer, cited_ids, note, prompt_ver = generate_answer(
+            question=request.question,
+            retrieved_chunks=chunks,
+            is_weak=is_weak
+        )
+        
+        return AskComplaintResponse(
+            answer=answer,
+            cited_evidence_ids=cited_ids,
+            evidence_sufficiency_note=note,
+            prompt_version=prompt_ver
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     uvicorn.run("src.serving.serve:app", host="0.0.0.0", port=8000, reload=True)
