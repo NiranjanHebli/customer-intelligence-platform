@@ -18,10 +18,13 @@ def download_bank_marketing(output_dir: str):
     os.makedirs(output_dir, exist_ok=True)
     output_path = os.path.join(output_dir, "bank_marketing.csv")
     
+    import ssl
+    context = ssl._create_unverified_context()
+    
     headers = {'User-Agent': 'Mozilla/5.0'}
     req = urllib.request.Request(UCI_BANK_MARKETING_URL, headers=headers)
     
-    with urllib.request.urlopen(req) as response:
+    with urllib.request.urlopen(req, context=context) as response:
         zip_data = response.read()
         
     with zipfile.ZipFile(io.BytesIO(zip_data)) as zip_ref:

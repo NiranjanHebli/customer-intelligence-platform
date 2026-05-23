@@ -1,0 +1,46 @@
+trigger:
+  - main
+  - master
+  - dev 
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.13'
+  displayName: 'Use Python 3.13'
+
+- script: |
+    python -m pip install --upgrade pip
+    pip install -r requirements.txt
+  displayName: 'Install dependencies'
+
+- script: |
+    flake8 src tests monitoring --count --select=E9,F63,F7,F82 --show-source --statistics
+    flake8 src tests monitoring --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+  displayName: 'Lint with Flake8'
+
+- script: |
+    python src/data_pipeline/validate.py --input-dir data/samples --output-dir data/processed
+  displayName: 'Run Data Validation Checks (Samples)'
+
+- script: |
+    python src/data_pipeline/ingest.py --bank
+    python src/data_pipeline/validate.py --input-dir data/raw --output-dir data/processed
+  displayName: 'Download & Validate Full Bank Marketing Data'
+
+- script: |
+    python src/training/train.py
+  displayName: 'Run Model Promotion Gate'
+
+- script: |
+    python src/data_pipeline/ingest.py --cfpb --sample-size 50
+    python src/rag/index.py
+  displayName: 'Setup Fast RAG Index (For Tests)'
+
+- script: |
+    pytest tests/ -v
+  displayName: 'Run Unit & Integration Tests'
+  env:
+    GROQ_API_KEY: $(GROQ_API_KEY)
