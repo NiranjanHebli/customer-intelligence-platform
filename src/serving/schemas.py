@@ -53,3 +53,24 @@ class AskComplaintResponse(BaseModel):
     cited_evidence_ids: List[str]
     evidence_sufficiency_note: str
     prompt_version: str
+
+class CustomerIntelRequest(BaseModel):
+    features: CustomerFeatures
+    product_filter: Optional[str] = None
+
+class ComplaintTheme(BaseModel):
+    theme: str
+    cited_evidence_ids: List[str]
+
+class CustomerIntelResponse(BaseModel):
+    prediction: int
+    probability: float
+    complaint_themes_answer: str
+    cited_evidence_ids: List[str]
+
+class MetricsResponse(BaseModel):
+    total_requests: int
+    error_rate: float
+    avg_latency_ms: float
+    prediction_distribution: Dict[int, int]
+    rag_refusal_rate: float
