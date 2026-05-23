@@ -5,6 +5,9 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
+variables:
+  PYTHONPATH: $(Build.SourcesDirectory)
+
 steps:
 - task: UsePythonVersion@0
   inputs:
