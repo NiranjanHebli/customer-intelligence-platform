@@ -7,11 +7,11 @@ __pycache__/
 *.pyo
 *.pyd
 .Python
-env/
 venv/
 .venv/
 pip-log.txt
 pip-delete-this-directory.txt
+.pytest_cache/
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints
@@ -34,7 +34,6 @@ Thumbs.db
 
 # Environmental variables (secrets)
 .env
-.env.*
 
 # MLflow files & databases
 mlruns/
@@ -42,13 +41,15 @@ mlflow.db
 mlflow.db.db
 
 # Large / local data files
-data/bank-additional-full.csv
-data/bank.csv
-data/complaints_sample.csv
-data/*.csv
-data/*.zip
-data/*.pkl
-data/*.parquet
+data/*
+!data/sample_*.csv
+
+# Model binaries
+*.joblib
+*.pkl
+
+# Local evaluation metrics plots
+metrics/
 
 # Local Vector DB artifacts
 *.index

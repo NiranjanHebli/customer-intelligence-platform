@@ -1,0 +1,30 @@
+{
+  "is_promoted": true,
+  "baseline_metrics": {
+    "roc_auc": 0.9424163580829283,
+    "pr_auc": 0.6355605045491317,
+    "f1_score": 0.5371734762223711
+  },
+  "improved_metrics": {
+    "roc_auc": 0.9518142070380677,
+    "pr_auc": 0.6761677305934063,
+    "f1_score": 0.6205278592375366
+  },
+  "checks": {
+    "pr_auc_gain_check": {
+      "baseline": 0.6355605045491317,
+      "improved": 0.6761677305934063,
+      "difference": 0.04060722604427458,
+      "required_gain": 0.02,
+      "passed": true
+    },
+    "f1_drop_check": {
+      "baseline": 0.5371734762223711,
+      "improved": 0.6205278592375366,
+      "difference": 0.08335438301516551,
+      "allowed_drop": 0.02,
+      "passed": true
+    }
+  },
+  "reason": "Model promoted. Improved model beat baseline PR-AUC by >= 2% and preserved F1-score."
+}
