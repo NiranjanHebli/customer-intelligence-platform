@@ -8,6 +8,7 @@ os.environ['OMP_NUM_THREADS'] = '1'
 from dotenv import load_dotenv
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from typing import Dict, Any
 import pandas as pd
 import uvicorn
@@ -52,6 +53,14 @@ app = FastAPI(
     description="API for scoring term-deposit subscriptions and RAG complaints",
     version="1.0.0",
     lifespan=lifespan
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 metrics_store = {
