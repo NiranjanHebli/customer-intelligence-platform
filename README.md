@@ -6,6 +6,15 @@
 [![ML](https://img.shields.io/badge/ML-XGBoost-lightgrey?labelColor=blue)](https://xgboost.readthedocs.io/)
 [![License](https://img.shields.io/badge/License-MIT-lightgrey?labelColor=green)](https://opensource.org/licenses/MIT)
 
+
+# Loom Demo Videos
+
+### [Part 1 :- Problem Statement, Idea, Approach](https://www.loom.com/share/6ccd70556d844f6f8059473f33a9a0ce) 
+
+### [Part 2:- Codebase, Azure and GitHub Walkthrough](https://www.loom.com/share/197bbfd4362e418ab2e661848a61ea31)
+
+
+
 ## Problem Statement
 
 Meridian Financial needs a production-minded Customer Intelligence Platform to run smarter outreach campaigns and resolve customer complaints at scale. The system requires deploying one classical Machine Learning (ML) service and one Large Language Model (LLM) / Retrieval-Augmented Generation (RAG) service, both integrated behind a single production API spine.
